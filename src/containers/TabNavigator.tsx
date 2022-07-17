@@ -7,7 +7,11 @@ import HomeScreen from "./HomeScreen";
 
 const Tab = createBottomTabNavigator();
 
-export default function TabNavigator() {
+interface TabNavigatorProps {
+    // userToken: string;
+}
+
+const TabNavigator: React.FC<TabNavigatorProps> = () => {
     return (
         <Tab.Navigator
             screenOptions={{
@@ -24,11 +28,11 @@ export default function TabNavigator() {
                 },
             }}
         >
-            <Tab.Screen name="Home" component={HomeScreen} />
+            <Tab.Screen name="Home">{(props) => <HomeScreen {...props} />}</Tab.Screen>
             <Tab.Screen name="Profile" component={ProfileScreen} />
         </Tab.Navigator>
     );
-}
+};
 
 const styles = StyleSheet.create({
     tabBarShadow: {
@@ -42,3 +46,5 @@ const styles = StyleSheet.create({
         elevation: 4,
     },
 });
+
+export default TabNavigator;
