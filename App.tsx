@@ -1,67 +1,54 @@
 import React, { useState } from "react";
 import { View, Text } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useFonts, Roboto_400Regular, Roboto_700Bold } from "@expo-google-fonts/roboto";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import HomeScreen from "./src/containers/HomeScreen";
 import LoginScreen from "./src/containers/LoginScreen";
 import RegisterScreen from "./src/containers/RegisterScreen";
-import ProfileScreen from "./src/containers/ProfileScreen";
+import TabNavigator from "./src/containers/TabNavigator";
+// REDUX
+import { RootState, store } from "./src/store/store";
+import { Provider } from "react-redux";
+import { useSelector } from "react-redux";
 
 const Stack = createNativeStackNavigator();
-const Tab = createBottomTabNavigator();
 
-export default function App() {
+const RootStack = () => {
+    const userToken = useSelector((state: RootState) => state.user.token);
     let [fontsLoaded] = useFonts({
         Roboto_400Regular,
         Roboto_700Bold,
     });
+    return !fontsLoaded ? (
+        <View>
+            <Text>Loading</Text>
+        </View>
+    ) : (
+        <NavigationContainer>{userToken ? <TabNavigator /> : <AuthStack />}</NavigationContainer>
+    );
+};
 
-    const [userToken, setUserToken] = useState("");
+const AuthStack = () => {
+    return (
+        <Stack.Navigator
+            screenOptions={{
+                headerShown: false,
+                animation: "fade_from_bottom",
+            }}
+        >
+            <Stack.Screen name="Login">{() => <LoginScreen />}</Stack.Screen>
+            <Stack.Screen name="Register">{() => <RegisterScreen />}</Stack.Screen>
+        </Stack.Navigator>
+    );
+};
 
-    const setToken = async (token: string) => {
-        if (token) {
-            await AsyncStorage.setItem("token", token);
-        } else {
-            await AsyncStorage.removeItem("token");
-        }
-        setUserToken(token);
-    };
-
-    if (!fontsLoaded) {
-        return (
-            <View>
-                <Text>Loading</Text>
-            </View>
-        );
-    } else {
-        return (
-            <NavigationContainer>
-                {!userToken ? (
-                    <Stack.Navigator
-                        screenOptions={{
-                            headerShown: false,
-                            animation: "fade_from_bottom",
-                        }}
-                    >
-                        <Stack.Screen name="Login">
-                            {() => <LoginScreen setToken={setToken} />}
-                        </Stack.Screen>
-                        <Stack.Screen name="Register">
-                            {() => <RegisterScreen setToken={setToken} />}
-                        </Stack.Screen>
-                    </Stack.Navigator>
-                ) : (
-                    <Tab.Navigator>
-                        <Tab.Screen name="Home" component={HomeScreen} />
-                        <Tab.Screen name="Profile" component={ProfileScreen} />
-                    </Tab.Navigator>
-                )}
-            </NavigationContainer>
-        );
-    }
+export default function App() {
+    return (
+        <Provider store={store}>
+            <RootStack />
+        </Provider>
+    );
 }
