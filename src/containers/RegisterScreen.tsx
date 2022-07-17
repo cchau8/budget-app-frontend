@@ -17,19 +17,27 @@ import { useNavigation } from "@react-navigation/native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import LoginInput from "../components/LoginInput";
 
+//redux
+import { useDispatch, useSelector } from "react-redux";
+import { setUser } from "../store/userSlice";
+import { RootState } from "../store/store";
+
 interface SignupProps {
-    setToken: (token: string) => void;
+    // setToken: (token: string) => void;
 }
 type Nav = {
     goBack: () => void;
 };
 
-const RegisterScreen: React.FC<SignupProps> = ({ setToken }) => {
+const RegisterScreen: React.FC<SignupProps> = () => {
     const navigation = useNavigation<Nav>();
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+
+    const userData = useSelector((state: RootState) => state.user);
+    const dispatch = useDispatch();
 
     const checkPassword = (password: string, confirmPassword: string): string => {
         const errors: string[] = [];
@@ -70,7 +78,7 @@ const RegisterScreen: React.FC<SignupProps> = ({ setToken }) => {
             });
 
             if (response.status === 200) {
-                setToken(response.data.token);
+                dispatch(setUser(response.data));
                 Alert.alert("Good", "User successfully created");
             }
         } catch (error: any) {
